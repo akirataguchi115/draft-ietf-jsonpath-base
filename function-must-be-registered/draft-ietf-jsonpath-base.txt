@@ -5,10 +5,10 @@
 JSONPath WG                                              S. Gössner, Ed.
 Internet-Draft                                   Fachhochschule Dortmund
 Intended status: Standards Track                      G. Normington, Ed.
-Expires: 27 October 2023                                                
+Expires: 28 October 2023                                                
                                                          C. Bormann, Ed.
                                                   Universität Bremen TZI
-                                                           25 April 2023
+                                                           26 April 2023
 
 
                   JSONPath: Query expressions for JSON
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 October 2023.
+   This Internet-Draft will expire on 28 October 2023.
 
 Copyright Notice
 
@@ -1650,13 +1650,6 @@ Normative Semantics
 
    Implementations MUST NOT support function extensions that are not
    registered.
-
-   Note: an implementation may behave by default in a "strict" mode that
-   conforms to this specification and offer some way of behaving in a
-   "non-strict" mode that supports unregistered function extensions.
-   This ensures that the default behaviour of the implementation does
-   not mislead users into thinking that uregistered function extensions
-   can be used interoperably.
 
    To define which function expressions are well typed, a type system is
    first introduced.
