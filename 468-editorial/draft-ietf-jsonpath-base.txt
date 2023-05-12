@@ -5,10 +5,10 @@
 JSONPath WG                                              S. Gössner, Ed.
 Internet-Draft                                   Fachhochschule Dortmund
 Intended status: Standards Track                      G. Normington, Ed.
-Expires: 3 October 2023                                                 
+Expires: 13 November 2023                                               
                                                          C. Bormann, Ed.
                                                   Universität Bremen TZI
-                                                            1 April 2023
+                                                             12 May 2023
 
 
                   JSONPath: Query expressions for JSON
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 3 October 2023.
+   This Internet-Draft will expire on 13 November 2023.
 
 Copyright Notice
 
@@ -103,11 +103,11 @@ Table of Contents
        2.4.1.  Type System for Function Expressions
        2.4.2.  Type Conversion
        2.4.3.  Well-Typedness of Function Expressions
-       2.4.4.  length Function Extension
-       2.4.5.  count Function Extension
-       2.4.6.  match Function Extension
-       2.4.7.  search Function Extension
-       2.4.8.  value Function Extension
+       2.4.4.  length() Function Extension
+       2.4.5.  count() Function Extension
+       2.4.6.  match() Function Extension
+       2.4.7.  search() Function Extension
+       2.4.8.  value() Function Extension
        2.4.9.  Examples
      2.5.  Segments
        2.5.1.  Child Segment
@@ -153,6 +153,9 @@ Table of Contents
    define Unicode code points rather than their UTF-8 encoding.  For
    example, the Unicode PLACE OF INTEREST SIGN (U+2318) would be defined
    in ABNF as %x2318.
+
+   Functions are referred to using the function name followed by a pair
+   of parentheses, as in fname().
 
    The terminology of [RFC8259] applies except where clarified below.
    The terms "Primitive" and "Structured" are used to group different
@@ -223,9 +226,6 @@ Table of Contents
       depth zero, the children of the root node have depth one, their
       children have depth two, and so forth.
 
-   Segment:  One of the constructs which select children ([]) or
-      descendants (..[]) of an input value.
-
    Nodelist:  A list of nodes.  While a nodelist can be represented in
       JSON, e.g. as an array, this document does not require or assume
       any particular representation.
@@ -244,16 +244,19 @@ Table of Contents
    Unicode Scalar Value:  Any Unicode [UNICODE] code point except high-
       surrogate and low-surrogate code points.  In other words, integers
       in either of the inclusive base 16 ranges 0 to D7FF and E000 to
-      10FFFF.  JSON string values are sequences of Unicode scalar
-      values.
+      10FFFF.  Both JSON string values and JSONPath queries are
+      sequences of Unicode scalar values.
 
-   Singular Query:  A JSONPath expression built from segments each of
-      which, regardless of the input value, produces a nodelist
-      containing at most one node.
+   Segment:  One of the constructs which select children ([<selectors>])
+      or descendants (..[<selectors>]) of an input value.
 
    Selector:  A single item within a segment that takes the input value
       and produces a nodelist consisting of child nodes of the input
       value.
+
+   Singular Query:  A JSONPath expression built from segments each of
+      which, regardless of the input value, produces a nodelist
+      containing at most one node.
 
 1.1.1.  JSON Values as Trees of Nodes
 
@@ -350,8 +353,8 @@ Table of Contents
 
 1.4.2.  Segments
 
-   Segments select children ([]) or descendants (..[]) of an input
-   value.
+   Segments select children ([<selectors>]) or descendants
+   (..[<selectors>]) of an input value.
 
    Segments can use _bracket notation_, for example:
 
@@ -360,6 +363,9 @@ Table of Contents
    or the more compact _dot notation_, for example:
 
    $.store.book[0].title
+
+   Bracket notation contains a comma separated list of one or more
+   selectors of any kind.  Selectors are detailed in the next section.
 
    A JSONPath expression may use a combination of bracket and dot
    notations.
@@ -596,7 +602,7 @@ Table of Contents
    specific API, it might be presented as an array of the JSON values at
    the nodes, an array of Normalized Paths referencing the nodes, or
    both — or some other representation as desired by the implementation.
-   Note that an empty nodelist is a valid query result.
+   Note: an empty nodelist is a valid query result.
 
    A segment operates on each of the nodes in its input nodelist in
    turn, and the resultant nodelists are concatenated in the order of
@@ -747,7 +753,7 @@ Syntax
    of [RFC8259]); single-quoted strings follow an analogous pattern
    (Section 2.3.3.1).  No attempt was made to improve on this syntax, so
    if it is desired to escape characters with scalar values above
-   0x10000, such as U+1F914 ("🤔", THINKING FACE), they need to be
+   0xFFFF, such as U+1F914 ("🤔", THINKING FACE), they need to be
    represented by a pair of surrogate escapes ("\uD83E\uDD14" in this
    case).
 
@@ -789,13 +795,13 @@ Semantics
    no such member value.  Nothing is selected from a value that is not
    an object.
 
-   Note that processing the name selector requires comparing the member
-   name string M with member name strings in the JSON to which the
-   selector is being applied.  Two strings MUST be considered equal if
-   and only if they are identical sequences of Unicode scalar values.
-   In other words, normalization operations MUST NOT be applied to
-   either the member name string M from the JSONPath or to the member
-   name strings in the JSON prior to comparison.
+   Note: processing the name selector requires comparing the member name
+   string M with member name strings in the JSON to which the selector
+   is being applied.  Two strings MUST be considered equal if and only
+   if they are identical sequences of Unicode scalar values.  In other
+   words, normalization operations MUST NOT be applied to either the
+   member name string M from the JSONPath or to the member name strings
+   in the JSON prior to comparison.
 
 Examples
 
@@ -911,9 +917,12 @@ Examples
    To be valid, the index selector value MUST be in the I-JSON range of
    exact values, see Section 2.1.
 
-   Notes: 1.  An index-selector is an integer (in base 10, as in JSON
-   numbers). 2.  As in JSON numbers, the syntax does not allow octal-
-   like integers with leading zeros such as 01 or -01.
+   Notes:
+
+   *  An index-selector is an integer (in base 10, as in JSON numbers).
+
+   *  As in JSON numbers, the syntax does not allow octal-like integers
+      with leading zeros such as 01 or -01.
 
 2.3.3.2.  Semantics
 
@@ -1196,7 +1205,7 @@ Normative Semantics
 
    The current node is accessible via the current node identifier @.
    This identifier addresses the current node of the filter-selector
-   that is directly enclosing the identifier; note that within nested
+   that is directly enclosing the identifier.  Note: within nested
    filter-selectors, there is no syntax to address the current node of
    any other than the directly enclosing filter-selector (i.e., of
    filter-selectors enclosing the filter-selector that is directly
@@ -1337,7 +1346,7 @@ Normative Semantics
    are used to define !=, <=, >, and >=.
 
    When either side of a comparison results in an empty nodelist or
-   Nothing:
+   Nothing (see Section 2.4.1):
 
    *  a comparison using the operator == yields true if and only the
       other side also results in an empty nodelist or Nothing.
@@ -1390,9 +1399,6 @@ Normative Semantics
          with the same Unicode scalar value and the remainder of the
          first string compares less than the remainder of the second
          string.
-
-   Note that comparisons using the operator < yield false if either
-   value being compared is an object, array, boolean, or null.
 
    !=, <=, >, and >= are defined in terms of the other comparison
    operators.  For any a and b:
@@ -1488,9 +1494,9 @@ Normative Semantics
 
    The second set of examples shows some complete JSONPath queries that
    make use of filter selectors, and the results of evaluating these
-   queries on a given JSON value as input.  (Note that two of the
-   queries employ function extensions; please see Sections 2.4.6 and
-   2.4.7 below for details about these.)
+   queries on a given JSON value as input.  (Note: two of the queries
+   employ function extensions; please see Sections 2.4.6 and 2.4.7 below
+   for details about these.)
 
    JSON:
 
@@ -1620,10 +1626,9 @@ Normative Semantics
    A function extension MUST be defined such that its evaluation is
    side-effect free, i.e., all possible orders of evaluation and choices
    of short-circuiting or full evaluation of an expression containing it
-   must lead to the same result.  (Note that memoization or logging are
-   not side effects in this sense as they are visible at the
-   implementation level only — they do not influence the result of the
-   evaluation.)
+   must lead to the same result.  (Note: memoization or logging are not
+   side effects in this sense as they are visible at the implementation
+   level only — they do not influence the result of the evaluation.)
 
    function-name       = function-name-first *function-name-char
    function-name-first = LCALPHA
@@ -1691,13 +1696,18 @@ Normative Semantics
 
    *  If the nodelist is empty, the conversion result is LogicalFalse.
 
-   Extraction of a value from a nodelist can be performed in several
-   ways, so an implicit conversion from NodesType to ValueType may be
-   surprising and has therefore not been defined.  A function expression
-   with a declared type of NodesType can indirectly be used as an
-   argument for a parameter of declared type ValueType by wrapping the
-   expression in a call to a function extension such as "value" (see
-   Section 2.4.8).
+   Notes:
+
+   *  Extraction of a value from a nodelist can be performed in several
+      ways, so an implicit conversion from NodesType to ValueType may be
+      surprising and has therefore not been defined.
+
+   *  A function expression with a declared type of NodesType can
+      indirectly be used as an argument for a parameter of declared type
+      ValueType by wrapping the expression in a call to a function
+      extension, such as value() (see Section 2.4.8), that takes a
+      parameter of type NodesType and returns a result of type
+      ValueType.
 
    The well-typedness of function expressions can now be defined in
    terms of this type system.
@@ -1760,14 +1770,14 @@ Normative Semantics
          o  If the query results in an empty nodelist, the argument is
             Nothing.
 
-2.4.4.  length Function Extension
+2.4.4.  length() Function Extension
 
    Parameters:
       1.  ValueType
 
    Result:  ValueType (unsigned integer or Nothing)
 
-   The "length" function extension provides a way to compute the length
+   The length() function extension provides a way to compute the length
    of a value and make that available for further processing in the
    filter expression:
 
@@ -1788,24 +1798,24 @@ Normative Semantics
 
    *  For any other argument value, the result is Nothing.
 
-2.4.5.  count Function Extension
+2.4.5.  count() Function Extension
 
    Parameters:
       1.  NodesType
 
    Result:  ValueType (unsigned integer)
 
-   The "count" function extension provides a way to obtain the number of
+   The count() function extension provides a way to obtain the number of
    nodes in a nodelist and make that available for further processing in
    the filter expression:
 
    $[?count(@.*.author) >= 5]
 
    Its only argument is a nodelist.  The result is a value, an unsigned
-   integer, that gives the number of nodes in the nodelist.  Note that
-   there is no deduplication of the nodelist.
+   integer, that gives the number of nodes in the nodelist.  Note: there
+   is no deduplication of the nodelist.
 
-2.4.6.  match Function Extension
+2.4.6.  match() Function Extension
 
    Parameters:
       1.  ValueType (string)
@@ -1815,7 +1825,7 @@ Normative Semantics
 
    Result:  LogicalType
 
-   The "match" function extension provides a way to check whether (the
+   The match() function extension provides a way to check whether (the
    entirety of, see Section 2.4.7 below) a given string matches a given
    regular expression, which is in [I-D.draft-ietf-jsonpath-iregexp]
    form.
@@ -1831,7 +1841,7 @@ Normative Semantics
    second argument; the result is LogicalTrue if the string matches the
    iregexp and LogicalFalse otherwise.
 
-2.4.7.  search Function Extension
+2.4.7.  search() Function Extension
 
    Parameters:
       1.  ValueType (string)
@@ -1841,7 +1851,7 @@ Normative Semantics
 
    Result:  LogicalType
 
-   The "search" function extension provides a way to check whether a
+   The search() function extension provides a way to check whether a
    given string contains a substring that matches a given regular
    expression, which is in [I-D.draft-ietf-jsonpath-iregexp] form.
 
@@ -1856,14 +1866,14 @@ Normative Semantics
    contained in the string that is the second argument; the result is
    LogicalTrue if such a substring exists and LogicalFalse otherwise.
 
-2.4.8.  value Function Extension
+2.4.8.  value() Function Extension
 
    Parameters:
       1.  NodesType
 
    Result:  ValueType
 
-   The "value" function extension provides a way to convert an instance
+   The value() function extension provides a way to convert an instance
    of NodesType to a value and make that available for further
    processing in the filter expression:
 
@@ -1880,63 +1890,63 @@ Normative Semantics
       is Nothing.
 
    Note: a singular query may be used anywhere where a ValueType is
-   expected, so there is no need to use the "value" function extension
+   expected, so there is no need to use the value() function extension
    with a singular query.
 
 2.4.9.  Examples
 
-    +======================+=========================================+
-    |        Query         | Comment                                 |
-    +======================+=========================================+
-    |  $[?length(@) < 3]   | well typed                              |
-    +----------------------+-----------------------------------------+
-    | $[?length(@.*) < 3]  | not well typed since @.* is a non-      |
-    |                      | singular query                          |
-    +----------------------+-----------------------------------------+
-    | $[?count(@.*) == 1]  | well typed                              |
-    +----------------------+-----------------------------------------+
-    |  $[?count(1) == 1]   | not well typed since 1 is not a query   |
-    |                      | or function expression                  |
-    +----------------------+-----------------------------------------+
-    |  $[?count(foo(@.*))  | well typed, where foo is a function     |
-    |        == 1]         | extension with a parameter of type      |
-    |                      | NodesType and result type NodesType     |
-    +----------------------+-----------------------------------------+
-    | $[?match(@.timezone, | well typed                              |
-    |    'Europe/.*')]     |                                         |
-    +----------------------+-----------------------------------------+
-    | $[?match(@.timezone, | not well typed as LogicalType may not   |
-    |   'Europe/.*') ==    | be used in comparisons                  |
-    |        true]         |                                         |
-    +----------------------+-----------------------------------------+
-    |  $[?value(@..color)  | well typed                              |
-    |      == "red"]       |                                         |
-    +----------------------+-----------------------------------------+
-    | $[?value(@..color)]  | not well typed as ValueType may not be  |
-    |                      | used in a test expression               |
-    +----------------------+-----------------------------------------+
-    |     $[?bar(@.a)]     | well typed for any function bar with a  |
-    |                      | parameter of any declared type and      |
-    |                      | result type LogicalType                 |
-    +----------------------+-----------------------------------------+
-    |     $[?bnl(@.*)]     | well typed for any function bnl with a  |
-    |                      | parameter of declared type NodesType or |
-    |                      | LogicalType and result type LogicalType |
-    +----------------------+-----------------------------------------+
-    |    $[?blt(1==1)]     | well typed, where blt is a function     |
-    |                      | with a parameter of declared type       |
-    |                      | LogicalType and result type LogicalType |
-    +----------------------+-----------------------------------------+
-    |      $[?blt(1)]      | not well typed for the same function    |
-    |                      | blt, as 1 is not a query, logical-expr, |
-    |                      | or function expression                  |
-    +----------------------+-----------------------------------------+
-    |      $[?bal(1)]      | well typed, where bal is a function     |
-    |                      | with a parameter of declared type       |
-    |                      | ValueType and result type LogicalType   |
-    +----------------------+-----------------------------------------+
+    +======================+==========================================+
+    |        Query         | Comment                                  |
+    +======================+==========================================+
+    |  $[?length(@) < 3]   | well typed                               |
+    +----------------------+------------------------------------------+
+    | $[?length(@.*) < 3]  | not well typed since @.* is a non-       |
+    |                      | singular query                           |
+    +----------------------+------------------------------------------+
+    | $[?count(@.*) == 1]  | well typed                               |
+    +----------------------+------------------------------------------+
+    |  $[?count(1) == 1]   | not well typed since 1 is not a query or |
+    |                      | function expression                      |
+    +----------------------+------------------------------------------+
+    |  $[?count(foo(@.*))  | well typed, where foo() is a function    |
+    |        == 1]         | extension with a parameter of type       |
+    |                      | NodesType and result type NodesType      |
+    +----------------------+------------------------------------------+
+    | $[?match(@.timezone, | well typed                               |
+    |    'Europe/.*')]     |                                          |
+    +----------------------+------------------------------------------+
+    | $[?match(@.timezone, | not well typed as LogicalType may not be |
+    |   'Europe/.*') ==    | used in comparisons                      |
+    |        true]         |                                          |
+    +----------------------+------------------------------------------+
+    |  $[?value(@..color)  | well typed                               |
+    |      == "red"]       |                                          |
+    +----------------------+------------------------------------------+
+    | $[?value(@..color)]  | not well typed as ValueType may not be   |
+    |                      | used in a test expression                |
+    +----------------------+------------------------------------------+
+    |     $[?bar(@.a)]     | well typed for any function bar() with a |
+    |                      | parameter of any declared type and       |
+    |                      | result type LogicalType                  |
+    +----------------------+------------------------------------------+
+    |     $[?bnl(@.*)]     | well typed for any function bnl() with a |
+    |                      | parameter of declared type NodesType or  |
+    |                      | LogicalType and result type LogicalType  |
+    +----------------------+------------------------------------------+
+    |    $[?blt(1==1)]     | well typed, where blt() is a function    |
+    |                      | with a parameter of declared type        |
+    |                      | LogicalType and result type LogicalType  |
+    +----------------------+------------------------------------------+
+    |      $[?blt(1)]      | not well typed for the same function     |
+    |                      | blt(), as 1 is not a query, logical-     |
+    |                      | expr, or function expression             |
+    +----------------------+------------------------------------------+
+    |      $[?bal(1)]      | well typed, where bal() is a function    |
+    |                      | with a parameter of declared type        |
+    |                      | ValueType and result type LogicalType    |
+    +----------------------+------------------------------------------+
 
-                  Table 14: Function expression examples
+                   Table 14: Function expression examples
 
 2.5.  Segments
 
@@ -1992,11 +2002,10 @@ Syntax
    shorthand for [*].
 
    .<member-name>, a child-segment built from a member-name-shorthand,
-   is shorthand for ['<member-name>'].  Note that this can only be used
-   with member names that are composed of certain characters, as
-   specified in the ABNF rule member-name-shorthand.  Thus, for example,
-   $.foo.bar is shorthand for $['foo']['bar'] (but not for
-   $['foo.bar']).
+   is shorthand for ['<member-name>'].  Note: this can only be used with
+   member names that are composed of certain characters, as specified in
+   the ABNF rule member-name-shorthand.  Thus, for example, $.foo.bar is
+   shorthand for $['foo']['bar'] (but not for $['foo.bar']).
 
 Semantics
 
@@ -2008,9 +2017,9 @@ Semantics
 
    For each node in the input nodelist, the resulting nodelist of a
    child segment is the concatenation of the nodelists from each of its
-   selectors in the order that the selectors appear in the list.  Note
-   that any node matched by more than one selector is kept as many times
-   in the nodelist.
+   selectors in the order that the selectors appear in the list.  Note:
+   any node matched by more than one selector is kept as many times in
+   the nodelist.
 
    Where a selector can produce a nodelist in more than one possible
    order, each occurrence of the selector in the child segment may
@@ -2062,12 +2071,12 @@ Syntax
    is shorthand for ..[*].
 
    ..<member-name>, a descendant-segment built from a member-name-
-   shorthand, is shorthand for ..['<member-name>'].  As with the similar
-   shorthand of a child-segment, note that this can only be used with
+   shorthand, is shorthand for ..['<member-name>'].  Note: as with the
+   similar shorthand of a child-segment, this can only be used with
    member names that are composed of certain characters, as specified in
    the ABNF rule member-name-shorthand.
 
-   Note that .. on its own is not a valid segment.
+   Note: .. on its own is not a valid segment.
 
 Semantics
 
@@ -2086,8 +2095,8 @@ Semantics
 
    Suppose the descendant segment is of the form ..[<selectors>] (after
    converting any shorthand form to bracket notation) and the nodes, in
-   the order visited, are D1, ..., Dn (where n >= 1).  Note that D1 is
-   the input value.
+   the order visited, are D1, ..., Dn (where n >= 1).  Note: D1 is the
+   input value.
 
    For each i such that 1 <= i <= n, the nodelist Ri is defined to be a
    result of applying the child segment [<selectors>] to the node Di.
@@ -2155,7 +2164,7 @@ Examples
 
                    Table 16: Descendant segment examples
 
-   Note: The ordering of the results for the $..[*] and $..* examples
+   Note: the ordering of the results for the $..[*] and $..* examples
    above is not guaranteed, except that:
 
    *  {"j": 1, "k": 2} must appear before 1 and 2,
@@ -2187,8 +2196,8 @@ Examples
 
 2.6.  Semantics of null
 
-   Note that JSON null is treated the same as any other JSON value: it
-   is not taken to mean "undefined" or "missing".
+   Note: JSON null is treated the same as any other JSON value: it is
+   not taken to mean "undefined" or "missing".
 
 Examples
 
@@ -2234,9 +2243,9 @@ Examples
    Specifically, a Normalized Path is a JSONPath query with restricted
    syntax (defined below), e.g., $['book'][3], which when applied to the
    value results in a nodelist consisting of just the node identified by
-   the Normalized Path.  Note that a Normalized Path represents the
-   identity of a node _in a specific value_. There is precisely one
-   Normalized Path identifying any particular node in a value.
+   the Normalized Path.  Note: a Normalized Path represents the identity
+   of a node _in a specific value_. There is precisely one Normalized
+   Path identifying any particular node in a value.
 
    A nodelist may be represented compactly in JSON as an array of
    strings, where the strings are Normalized Paths.
@@ -2519,9 +2528,9 @@ Examples
    [I-D.draft-ietf-jsonpath-iregexp]
               Bormann, C. and T. Bray, "I-Regexp: An Interoperable
               Regexp Format", Work in Progress, Internet-Draft, draft-
-              ietf-jsonpath-iregexp-04, 31 March 2023,
+              ietf-jsonpath-iregexp-06, 4 May 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-
-              jsonpath-iregexp-04>.
+              jsonpath-iregexp-06>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -2621,7 +2630,7 @@ Appendix A.  Inspired by XPath
       client, so the server can reduce the amount of data in its
       response, minimizing bandwidth usage.
 
-   (Note that XPath has evolved since 2007, and recent versions even
+   (Note: XPath has evolved since 2007, and recent versions even
    nominally support operating inside JSON values.  This appendix only
    discusses the more widely used version of XPath that was available in
    2007.)
