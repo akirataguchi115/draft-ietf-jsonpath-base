@@ -5,10 +5,10 @@
 JSONPath WG                                              S. Gössner, Ed.
 Internet-Draft                                   Fachhochschule Dortmund
 Intended status: Standards Track                      G. Normington, Ed.
-Expires: 21 October 2023                                                
+Expires: 27 November 2023                                               
                                                          C. Bormann, Ed.
                                                   Universität Bremen TZI
-                                                           19 April 2023
+                                                             26 May 2023
 
 
                   JSONPath: Query expressions for JSON
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 October 2023.
+   This Internet-Draft will expire on 27 November 2023.
 
 Copyright Notice
 
@@ -226,9 +226,6 @@ Table of Contents
       depth zero, the children of the root node have depth one, their
       children have depth two, and so forth.
 
-   Segment:  One of the constructs which select children ([]) or
-      descendants (..[]) of an input value.
-
    Nodelist:  A list of nodes.  While a nodelist can be represented in
       JSON, e.g. as an array, this document does not require or assume
       any particular representation.
@@ -250,13 +247,16 @@ Table of Contents
       10FFFF.  Both JSON string values and JSONPath queries are
       sequences of Unicode scalar values.
 
-   Singular Query:  A JSONPath expression built from segments each of
-      which, regardless of the input value, produces a nodelist
-      containing at most one node.
+   Segment:  One of the constructs which select children ([<selectors>])
+      or descendants (..[<selectors>]) of an input value.
 
    Selector:  A single item within a segment that takes the input value
       and produces a nodelist consisting of child nodes of the input
       value.
+
+   Singular Query:  A JSONPath expression built from segments each of
+      which, regardless of the input value, produces a nodelist
+      containing at most one node.
 
 1.1.1.  JSON Values as Trees of Nodes
 
@@ -353,8 +353,8 @@ Table of Contents
 
 1.4.2.  Segments
 
-   Segments select children ([]) or descendants (..[]) of an input
-   value.
+   Segments select children ([<selectors>]) or descendants
+   (..[<selectors>]) of an input value.
 
    Segments can use _bracket notation_, for example:
 
@@ -363,6 +363,9 @@ Table of Contents
    or the more compact _dot notation_, for example:
 
    $.store.book[0].title
+
+   Bracket notation contains a comma separated list of one or more
+   selectors of any kind.  Selectors are detailed in the next section.
 
    A JSONPath expression may use a combination of bracket and dot
    notations.
@@ -1239,14 +1242,12 @@ Normative Semantics
    use in a test expression is not well typed (see Section 2.4.3).
 
    test-expr           = [logical-not-op S]
-                        (filter-query          / ; existence/non-existence
-                         logical-function-expr /
-                         nodes-function-expr)
+                        (filter-query / ; existence/non-existence
+                         function-expr) ; LogicalType or
+                                        ; NodesType
    filter-query        = rel-query / jsonpath-query
    rel-query           = current-node-identifier segments
    current-node-identifier = "@"
-   logical-function-expr = function-expr
-   nodes-function-expr = function-expr
 
    Comparison expressions are available for comparisons between
    primitive values (that is, numbers, strings, true, false, and null).
@@ -1259,11 +1260,10 @@ Normative Semantics
                          true / false / null
    comparable          = literal /
                          singular-query / ; singular query value
-                         value-function-expr
+                         function-expr    ; ValueType
    comparison-op       = "==" / "!=" /
                          "<=" / ">=" /
                          "<"  / ">"
-   value-function-expr = function-expr
 
    singular-query      = rel-singular-query / abs-singular-query
    rel-singular-query  = current-node-identifier singular-query-segments
@@ -1671,14 +1671,6 @@ Normative Semantics
 
                   Table 13: Function extension type system
 
-   A function is typed in accordance with its result.
-
-   *  Functions which return ValueType are value-function-expr
-
-   *  Functions which return LogicalType are logical-function-expr
-
-   *  Functions which return NodesType are nodes-function-expr
-
    Notes:
 
    *  The only instances that can be directly represented in JSONPath
@@ -1694,9 +1686,10 @@ Normative Semantics
 2.4.2.  Type Conversion
 
    Just as queries can be used in logical expressions by testing for the
-   existence of at least one node (Section 2.3.5.2.1), a nodes-function-
-   expr can be used as a function argument for a parameter of declared
-   type LogicalType, with the equivalent conversion rule:
+   existence of at least one node (Section 2.3.5.2.1), a function
+   expression of declared type NodesType can be used as a function
+   argument for a parameter of declared type LogicalType, with the
+   equivalent conversion rule:
 
    *  If the nodelist contains one or more nodes, the conversion result
       is LogicalTrue.
@@ -1734,11 +1727,11 @@ Normative Semantics
    for well-typedness:
 
    As a test-expr in a logical expression:
-      The function must be either logical-function-expr or nodes-
-      function-expr.
+      The function's declared result type is LogicalType, or (giving
+      rise to conversion as per Section 2.4.2) NodesType.
 
    As a comparable in a comparison:
-      The function must be value-function-expr.
+      The function's declared result type is ValueType.
 
    As a function-argument in another function expression:
       The function's declared result type fulfills the following rules
@@ -2530,50 +2523,50 @@ Examples
    [BCP26]    Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
               RFC 8126, DOI 10.17487/RFC8126, June 2017,
-              <https://datatracker.ietf.org/doc/html/rfc8126>.
+              <https://www.rfc-editor.org/rfc/rfc8126>.
 
    [I-D.draft-ietf-jsonpath-iregexp]
               Bormann, C. and T. Bray, "I-Regexp: An Interoperable
               Regexp Format", Work in Progress, Internet-Draft, draft-
-              ietf-jsonpath-iregexp-04, 31 March 2023,
+              ietf-jsonpath-iregexp-06, 4 May 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-
-              jsonpath-iregexp-04>.
+              jsonpath-iregexp-06>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
-              <https://datatracker.ietf.org/doc/html/rfc2119>.
+              <https://www.rfc-editor.org/rfc/rfc2119>.
 
    [RFC3629]  Yergeau, F., "UTF-8, a transformation format of ISO
               10646", STD 63, RFC 3629, DOI 10.17487/RFC3629, November
-              2003, <https://datatracker.ietf.org/doc/html/rfc3629>.
+              2003, <https://www.rfc-editor.org/rfc/rfc3629>.
 
    [RFC5234]  Crocker, D., Ed. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234,
               DOI 10.17487/RFC5234, January 2008,
-              <https://datatracker.ietf.org/doc/html/rfc5234>.
+              <https://www.rfc-editor.org/rfc/rfc5234>.
 
    [RFC6838]  Freed, N., Klensin, J., and T. Hansen, "Media Type
               Specifications and Registration Procedures", BCP 13,
               RFC 6838, DOI 10.17487/RFC6838, January 2013,
-              <https://datatracker.ietf.org/doc/html/rfc6838>.
+              <https://www.rfc-editor.org/rfc/rfc6838>.
 
    [RFC7493]  Bray, T., Ed., "The I-JSON Message Format", RFC 7493,
               DOI 10.17487/RFC7493, March 2015,
-              <https://datatracker.ietf.org/doc/html/rfc7493>.
+              <https://www.rfc-editor.org/rfc/rfc7493>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
-              May 2017, <https://datatracker.ietf.org/doc/html/rfc8174>.
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
 
    [RFC8259]  Bray, T., Ed., "The JavaScript Object Notation (JSON) Data
               Interchange Format", STD 90, RFC 8259,
               DOI 10.17487/RFC8259, December 2017,
-              <https://datatracker.ietf.org/doc/html/rfc8259>.
+              <https://www.rfc-editor.org/rfc/rfc8259>.
 
    [STD80]    Cerf, V., "ASCII format for network interchange", STD 80,
               RFC 20, DOI 10.17487/RFC0020, October 1969,
-              <https://datatracker.ietf.org/doc/html/rfc20>.
+              <https://www.rfc-editor.org/rfc/rfc20>.
 
    [UNICODE]  The Unicode Consortium, "The Unicode® Standard: Version
               14.0 - Core Specification", September 2021,
@@ -2602,12 +2595,12 @@ Examples
    [RFC6901]  Bryan, P., Ed., Zyp, K., and M. Nottingham, Ed.,
               "JavaScript Object Notation (JSON) Pointer", RFC 6901,
               DOI 10.17487/RFC6901, April 2013,
-              <https://datatracker.ietf.org/doc/html/rfc6901>.
+              <https://www.rfc-editor.org/rfc/rfc6901>.
 
    [RFC8949]  Bormann, C. and P. Hoffman, "Concise Binary Object
               Representation (CBOR)", STD 94, RFC 8949,
               DOI 10.17487/RFC8949, December 2020,
-              <https://datatracker.ietf.org/doc/html/rfc8949>.
+              <https://www.rfc-editor.org/rfc/rfc8949>.
 
    [SLICE]    "Slice notation", n.d.,
               <https://github.com/tc39/proposal-slice-notation>.
