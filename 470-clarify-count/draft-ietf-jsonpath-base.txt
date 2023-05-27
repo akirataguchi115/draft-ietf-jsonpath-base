@@ -5,10 +5,10 @@
 JSONPath WG                                              S. Gössner, Ed.
 Internet-Draft                                   Fachhochschule Dortmund
 Intended status: Standards Track                      G. Normington, Ed.
-Expires: 28 October 2023                                                
+Expires: 28 November 2023                                               
                                                          C. Bormann, Ed.
                                                   Universität Bremen TZI
-                                                           26 April 2023
+                                                             27 May 2023
 
 
                   JSONPath: Query expressions for JSON
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 October 2023.
+   This Internet-Draft will expire on 28 November 2023.
 
 Copyright Notice
 
@@ -226,9 +226,6 @@ Table of Contents
       depth zero, the children of the root node have depth one, their
       children have depth two, and so forth.
 
-   Segment:  One of the constructs which select children ([]) or
-      descendants (..[]) of an input value.
-
    Nodelist:  A list of nodes.  While a nodelist can be represented in
       JSON, e.g. as an array, this document does not require or assume
       any particular representation.
@@ -250,13 +247,16 @@ Table of Contents
       10FFFF.  Both JSON string values and JSONPath queries are
       sequences of Unicode scalar values.
 
-   Singular Query:  A JSONPath expression built from segments each of
-      which, regardless of the input value, produces a nodelist
-      containing at most one node.
+   Segment:  One of the constructs which select children ([<selectors>])
+      or descendants (..[<selectors>]) of an input value.
 
    Selector:  A single item within a segment that takes the input value
       and produces a nodelist consisting of child nodes of the input
       value.
+
+   Singular Query:  A JSONPath expression built from segments each of
+      which, regardless of the input value, produces a nodelist
+      containing at most one node.
 
 1.1.1.  JSON Values as Trees of Nodes
 
@@ -353,8 +353,8 @@ Table of Contents
 
 1.4.2.  Segments
 
-   Segments select children ([]) or descendants (..[]) of an input
-   value.
+   Segments select children ([<selectors>]) or descendants
+   (..[<selectors>]) of an input value.
 
    Segments can use _bracket notation_, for example:
 
@@ -363,6 +363,9 @@ Table of Contents
    or the more compact _dot notation_, for example:
 
    $.store.book[0].title
+
+   Bracket notation contains a comma separated list of one or more
+   selectors of any kind.  Selectors are detailed in the next section.
 
    A JSONPath expression may use a combination of bracket and dot
    notations.
@@ -540,8 +543,8 @@ Table of Contents
        the range of exact values defined in I-JSON [RFC7493], namely
        within the interval [-(2^53)+1, (2^53)-1].
 
-   2.  Uses of function extensions must be _supported_ and _well typed_,
-       as described in Section 2.4.
+   2.  Uses of function extensions must be _well typed_, as described in
+       Section 2.4.
 
    A JSONPath implementation MUST raise an error for any query which is
    not well formed and valid.  The well-formedness and the validity of
@@ -1640,28 +1643,15 @@ Normative Semantics
                          function-expr
 
    Any function expressions in a query must be well formed (by
-   conforming to the above ABNF), supported, and well typed, otherwise
-   the JSONPath implementation MUST raise an error (see Section 2.1).
-
-   For a function expression to be supported, each function extension
-   involved in the expression must be supported.  Implementations MUST
-   support the function extensions defined in this document, but are
-   free to support or not support other registered function extensions.
-
-   Implementations MUST NOT support function extensions that are not
-   registered.
-
-   To define which function expressions are well typed, a type system is
-   first introduced.
+   conforming to the above ABNF) and well typed, otherwise the JSONPath
+   implementation MUST raise an error (see Section 2.1).  To define
+   which function expressions are well typed, a type system is first
+   introduced.
 
 2.4.1.  Type System for Function Expressions
 
    Each parameter as well as the result of a function extension must
    have a declared type.
-
-   The registered set of function extensions (see Section 3.2) is the
-   source of knowledge regarding the declared return and parameter types
-   of a function extension.
 
    Declared types enable checking a JSONPath query for well-typedness
    independent of any query argument the JSONPath query is applied to.
@@ -1822,8 +1812,15 @@ Normative Semantics
    $[?count(@.*.author) >= 5]
 
    Its only argument is a nodelist.  The result is a value, an unsigned
-   integer, that gives the number of nodes in the nodelist.  Note: there
-   is no deduplication of the nodelist.
+   integer, that gives the number of nodes in the nodelist.
+
+   Notes:
+
+   *  There is no deduplication of the nodelist.
+
+   *  There is one node in a nodelist consisting of a single node, even
+      if that node is an array or an object with multiple children.  For
+      example, count(@) always equals 1.
 
 2.4.6.  match() Function Extension
 
@@ -2538,9 +2535,9 @@ Examples
    [I-D.draft-ietf-jsonpath-iregexp]
               Bormann, C. and T. Bray, "I-Regexp: An Interoperable
               Regexp Format", Work in Progress, Internet-Draft, draft-
-              ietf-jsonpath-iregexp-04, 31 March 2023,
+              ietf-jsonpath-iregexp-06, 4 May 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-
-              jsonpath-iregexp-04>.
+              jsonpath-iregexp-06>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
