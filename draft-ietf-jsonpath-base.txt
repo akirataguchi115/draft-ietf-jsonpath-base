@@ -5,10 +5,10 @@
 JSONPath WG                                              S. Gössner, Ed.
 Internet-Draft                                   Fachhochschule Dortmund
 Intended status: Standards Track                      G. Normington, Ed.
-Expires: 27 November 2023                                               
+Expires: 29 November 2023                                               
                                                          C. Bormann, Ed.
                                                   Universität Bremen TZI
-                                                             26 May 2023
+                                                             28 May 2023
 
 
                   JSONPath: Query expressions for JSON
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 November 2023.
+   This Internet-Draft will expire on 29 November 2023.
 
 Copyright Notice
 
@@ -1812,8 +1812,13 @@ Normative Semantics
    $[?count(@.*.author) >= 5]
 
    Its only argument is a nodelist.  The result is a value, an unsigned
-   integer, that gives the number of nodes in the nodelist.  Note: there
-   is no deduplication of the nodelist.
+   integer, that gives the number of nodes in the nodelist.  Notes:
+
+   *  There is no deduplication of the nodelist.
+
+   *  The number of nodes in the nodelist is counted independent of
+      their values or any children they may have; e.g., the count of a
+      non-empty singular nodelist such as count(@) is always 1.
 
 2.4.6.  match() Function Extension
 
@@ -2528,9 +2533,9 @@ Examples
    [I-D.draft-ietf-jsonpath-iregexp]
               Bormann, C. and T. Bray, "I-Regexp: An Interoperable
               Regexp Format", Work in Progress, Internet-Draft, draft-
-              ietf-jsonpath-iregexp-06, 4 May 2023,
+              ietf-jsonpath-iregexp-07, 27 May 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-
-              jsonpath-iregexp-06>.
+              jsonpath-iregexp-07>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
