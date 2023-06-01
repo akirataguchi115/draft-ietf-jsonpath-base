@@ -5,10 +5,10 @@
 JSONPath WG                                              S. Gössner, Ed.
 Internet-Draft                                   Fachhochschule Dortmund
 Intended status: Standards Track                      G. Normington, Ed.
-Expires: 29 November 2023                                               
+Expires: 3 December 2023                                                
                                                          C. Bormann, Ed.
                                                   Universität Bremen TZI
-                                                             28 May 2023
+                                                             1 June 2023
 
 
                   JSONPath: Query expressions for JSON
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 29 November 2023.
+   This Internet-Draft will expire on 3 December 2023.
 
 Copyright Notice
 
@@ -244,8 +244,7 @@ Table of Contents
    Unicode Scalar Value:  Any Unicode [UNICODE] code point except high-
       surrogate and low-surrogate code points.  In other words, integers
       in either of the inclusive base 16 ranges 0 to D7FF and E000 to
-      10FFFF.  Both JSON string values and JSONPath queries are
-      sequences of Unicode scalar values.
+      10FFFF.  JSONPath queries are sequences of Unicode scalar values.
 
    Segment:  One of the constructs which select children ([<selectors>])
       or descendants (..[<selectors>]) of an input value.
